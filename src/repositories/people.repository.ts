@@ -1,6 +1,5 @@
 import { DeleteResult, Repository, UpdateResult } from "typeorm";
 import { AppDataSource } from "../data-source";
-import { InfoContact } from "../entities/InfoContact";
 import { People } from "../entities/People";
 
 interface IPeopleRepo {
@@ -13,11 +12,9 @@ interface IPeopleRepo {
 
 class PeopleRepository implements IPeopleRepo {
   private peopleRepo: Repository<People>;
-  private infoContactRepo: Repository<InfoContact>;
 
   constructor() {
     this.peopleRepo = AppDataSource.getRepository(People);
-    this.infoContactRepo = AppDataSource.getRepository(InfoContact);
   }
 
   save = async (people: People): Promise<People> => {

@@ -1,12 +1,12 @@
 import { DeleteResult, UpdateResult, Repository } from "typeorm";
 import { InfoContact } from "../entities/InfoContact";
 import { AppDataSource } from "../data-source";
-import { IRegisterContact } from "../interfaces/people.interface";
+import { IRegisterContact } from "../interfaces/contact.interface";
 import PeopleRepository from "./people.repository";
 import { People } from "../entities/People";
 
 interface IInfoContactRepo {
-  save: (info: IRegisterContact) => Promise<InfoContact>;
+  save: (info: InfoContact) => Promise<InfoContact>;
   retrieve: (peopleId: string) => Promise<InfoContact[] | null>;
   update: (id: string, payload: Partial<InfoContact>) => Promise<UpdateResult>;
   delete: (id: string) => Promise<DeleteResult>;
@@ -19,8 +19,7 @@ class InfoContactRepository implements IInfoContactRepo {
     this.infoContactRepo = AppDataSource.getRepository(InfoContact);
   }
 
-  save = async (info: IRegisterContact) =>
-    await this.infoContactRepo.save(info);
+  save = async (info: InfoContact) => await this.infoContactRepo.save(info);
 
   update = async (id: string, payload: Partial<InfoContact>) =>
     await this.infoContactRepo.update(id, { ...payload });

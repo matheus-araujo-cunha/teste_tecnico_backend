@@ -3,13 +3,14 @@ import { InfoContact } from "./InfoContact";
 
 @Entity("contacts")
 export class Contact {
-    @PrimaryGeneratedColumn("uuid")
-    id?:string;
+  @PrimaryGeneratedColumn("uuid")
+  id?: string;
 
-    @Column({unique:true})
-    contact:string;
+  @Column({ unique: true })
+  contact: string;
 
-    @OneToMany(type => InfoContact, infoContact => infoContact.contact , {cascade:["remove"]})
-    infos : Contact[]
+  @OneToMany((type) => InfoContact, (infoContact) => infoContact.name, {
+    cascade: ["remove"],
+  })
+  infos: InfoContact[];
 }
-
