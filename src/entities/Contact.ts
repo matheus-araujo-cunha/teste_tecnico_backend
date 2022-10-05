@@ -10,7 +10,7 @@ export class Contact {
   contact: string;
 
   @OneToMany((type) => InfoContact, (infoContact) => infoContact.name, {
-    cascade: ["remove"],
+    onDelete: "CASCADE",
   })
   infos: InfoContact[];
 }

@@ -14,7 +14,7 @@ export class People {
 
   @OneToMany((type) => InfoContact, (infoContact) => infoContact.people, {
     eager: true,
-    cascade: ["remove"],
+    onDelete: "CASCADE",
   })
   contacts: InfoContact[];
 }

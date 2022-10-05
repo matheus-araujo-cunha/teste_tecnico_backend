@@ -6,6 +6,7 @@ declare global {
     interface Request {
       validated: People | IRegisterContact;
       people: People;
+      contacts: InfoContact[];
       contact: InfoContact;
     }
   }

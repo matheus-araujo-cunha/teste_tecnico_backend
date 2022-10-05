@@ -3,12 +3,11 @@ import { AppDataSource } from "../data-source";
 import { Contact } from "../entities/Contact";
 import { InfoContact } from "../entities/InfoContact";
 import { ErrorHandler } from "../errors/errorHandler";
-import {
-  IRegisterContact,
-  IUpdateContact,
-} from "../interfaces/contact.interface";
+import { IRegisterContact } from "../interfaces/contact.interface";
 import InfoContactRepository from "../repositories/infoContact.repository";
 import { listContactsSchema } from "../schemas/contacts.schema";
+import { serializerContact } from "../utils";
+import { addContactSchema } from "../schemas/contacts.schema";
 
 class ContactService {
   addContact = async ({ validated, people }: Request) => {
@@ -22,26 +21,47 @@ class ContactService {
       },
     })) as Contact;
 
+    if (!contactName) {
+      throw new ErrorHandler(
+        400,
+        "Contact must be an email, phone or whatsapp"
+      );
+    }
+
     const registerContact = new InfoContact();
     registerContact.info = peopleValidated.info;
     registerContact.name = contactName;
     registerContact.people = people;
 
+    console.log(registerContact);
+
     await InfoContactRepository.save(registerContact);
 
     const peopleId = people.id as string;
-    const contactsOfPeople = await InfoContactRepository.retrieve(peopleId);
+    const contactsOfPeople = await InfoContactRepository.retrieveContacts(
+      peopleId
+    );
 
-    return await listContactsSchema.validate(contactsOfPeople, {
+    const mappedContacts = contactsOfPeople.map((contact) =>
+      serializerContact(contact)
+    );
+
+    return await listContactsSchema.validate(mappedContacts, {
       stripUnknown: true,
     });
   };
 
   retrieveContactsOfPeople = async ({ people }: Request) => {
     const peopleId = people.id as string;
-    const contactsOfPeople = await InfoContactRepository.retrieve(peopleId);
+    const contactsOfPeople = await InfoContactRepository.retrieveContacts(
+      peopleId
+    );
 
-    return await listContactsSchema.validate(contactsOfPeople, {
+    const mappedContacts = contactsOfPeople.map((contact) =>
+      serializerContact(contact)
+    );
+
+    return await listContactsSchema.validate(mappedContacts, {
       stripUnknown: true,
     });
   };
@@ -51,15 +71,16 @@ class ContactService {
     return await InfoContactRepository.delete(id);
   };
 
-  updateContact = async ({ contact }: Request, payload: IUpdateContact) => {
+  updateContact = async ({ contact, body }: Request) => {
     const id = contact.id as string;
+    const { info, contact: contactData } = body;
 
-    const contactObj = payload.contact as string;
+    const payload = { info, name: contactData };
 
-    if (contactObj) {
+    if (contactData) {
       const ContactRepo = AppDataSource.getRepository(Contact);
       const newContact = await ContactRepo.findOne({
-        where: { contact: contactObj },
+        where: { contact: contactData },
       });
 
       if (!newContact) {
@@ -68,11 +89,22 @@ class ContactService {
           "Contact must be a email, phone or whatsapp!"
         );
       }
-
-      payload.contact = newContact;
+      payload.name = newContact.id;
     }
 
     await InfoContactRepository.update(id, payload);
+
+    const contactUpdated = (await InfoContactRepository.retrieve(
+      id
+    )) as InfoContact;
+
+    const mappedContact = serializerContact(contactUpdated);
+
+    console.log(mappedContact);
+
+    return await addContactSchema.validate(mappedContact, {
+      stripUnknown: true,
+    });
   };
 }
 
